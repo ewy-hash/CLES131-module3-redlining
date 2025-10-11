@@ -17,10 +17,12 @@ library(ggplot2)
 ### Use of GitHub
 
 Link to your forked GH repository:
+https://github.com/ewy-hash/CLES131-module3-redlining#
 
 ### Use of Quarto
 
 Link to your .qmd file:
+https://github.com/ewy-hash/CLES131-module3-redlining/blob/main/module3.qmd
 
 # Ecological consequences of redlining
 
@@ -34,6 +36,8 @@ We will use a vector dataset of redlining maps from [Mapping Inequality](https:/
 
 Click 'Explore the Maps' to look at some cities and neighborhoods you are familiar with. Who is the intended audience of this data science project, and how are the data used to communicate understanding, insight, and knowledge? Why is this effective?
 
+I looked at the San Francisco area since that is near where I'm from. It seems like the intended audience could be citizens who want to glean a deeper understanding about the history of the areas they are from. As well, this is an important tool for education. The data communicates not just visually, but also gives context using the "context" tab and the "area descriptions" tab. In general, people tend to have an emotion connection to places they live near and/or are familiar with. By  highlighting the language used by the creators of the map, it evokes an emotional response in the viewer.
+
 ### Q2 (1 point)
 
 Create a `data/` folder in the root of your project and create five subfolders labeled with the city names from Fig. 2 of Schell et al. 2020. Because the spatial files will be large, add `data/` to the .gitignore file. 
@@ -44,6 +48,21 @@ Import the geojson file into your R environment with the `read_sf`()` function f
 
 Make a quick plot of your first city showing the "grade" in color using ggplot syntax and `geom_sf()`. Select a color scheme that better comports with redlining. 
 
+```{r}
+## need to already be in module 3 file
+Baltimore <- read_sf("Data/Baltimore/geojson.json")
+Minneapolis <- read_sf("Data/Minneapolis/geojson.json")
+Birmingham <- read_sf("Data/Birmingham/geojson.json")
+Phoenix <- read_sf("Data/Phoenix/geojson.json")
+Indianapolis <- read_sf("Data/Indianapolis/geojson.json")
+##getting colors
+
+plot <- ggplot(data = Baltimore)+ 
+  geom_sf(aes(fill = grade))+
+  scale_fill_manual(values = unique(Baltimore$fill))
+plot
+```
+}}
 ## The raster data
 
 We will also be calculating NDVI from the European Space Agency's Sentinel-2 Mission, specifically bands B4 (red) and B8 (near infrared). There are multiple steps to importing the data, which itself takes a long time, so please get an early start.
