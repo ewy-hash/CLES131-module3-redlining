@@ -55,7 +55,7 @@ Minneapolis <- read_sf("Data/Minneapolis/geojson.json")
 Birmingham <- read_sf("Data/Birmingham/geojson.json")
 Phoenix <- read_sf("Data/Phoenix/geojson.json")
 Indianapolis <- read_sf("Data/Indianapolis/geojson.json")
-##getting colors
+
 
 plot <- ggplot(data = Baltimore)+ 
   geom_sf(aes(fill = grade))+
@@ -82,15 +82,145 @@ The data will be packaged as a zipped SAFE file in your Downloads folder. You ma
 
 For each city, copy the coarsest resolution files for the B04 and B08 bands along with associated metadata to `data/city_name/` within this project. 
 
+## B04 is red and B08 is near infared, good for mapping imagery, both have resolution of 10 m
+
 ### Q3 (1 point)
 Use the terra package and the `rast()` function to import the two bands, which are reported as digital numbers. Combine to calculate NDVI and display a quick plot of your first city. Since you have 5 cities to plot, how can you optimize these operations with a for loop? (Not necessary to actually do so.) 
+Terra is for manipulating spacial data in the raster format.
+could use a list of all the data 
 
+```{r}
+#red is red, NIR is near infared
+REDbaltimore <- rast(x = "Data/Baltimore/T18SUJ_20230525T154941_B04.jp2")
+NIRbaltimore <- rast(x = "Data/Baltimore/T18SUJ_20230525T154941_B08.jp2")
+NDVIbaltimore <- (NIRbaltimore - REDbaltimore) / (NIRbaltimore + REDbaltimore)
+
+ggplot()+
+  geom_spatraster(data = NDVIbaltimore)
+
+#ggplot()+
+  # geom_spatraster(data = NIRbaltimore)
+
+```
 ### Q4 (1 point)
 Do the rasters and polygons share the same coordinate reference system? If not, project both into the same coordinate system and defend your choice. 
 
+```{r}
+# seems like they do share the coordiante system, as you can see from running the code below they both get placed onto the map using longitude and latitude coords
+
+
+test <- ggplot(data = Baltimore)+
+  geom_sf()+
+  geom_spatraster(data = NIRbaltimore, alpha = 0.5)
+test
+
+```
 ### Q5 (1 points)
 Overlay the projected vector file onto the projected NDVI for a single city using `tidyterra::geom_spatraster()` in addition to `geom_sf()`. Adjust the color scales and add a scale bar to approximate Fig. 2a of Schell et al. 2020. 
 
+```{r}
+# first am gonna figure out the spatraster data and how to color etc
+#to check if they have same coord system EPSG value, not very helpful as NDVI has lots of values
+
+
+crs(Baltimore)
+crs(NDVIbaltimore)
+
+#seems like they dont actually share the same CRS so have to transform
+
+ext(NDVIbaltimore)
+ext(Baltimore)
+
+st_transform(x = NDVIbaltimore, crs = "EPSG:4326")
+#need to change NDVIbaltimore to spsg 4326 which is what Baltimore has
+#project from terra
+#:: means it uses the function from that package
+NDVIbaltimorePLOT <- terra::project(x = NDVIbaltimore, "EPSG:4326")
+
+ggplot()+
+  geom_spatraster(data = NDVIbaltimorePLOT)+
+  scale_fill_gradient(low = "white", high = "forestgreen", name = "NDVI")+
+  geom_sf(data = Baltimore, fill = NA, color = "black")+
+  # scale_x_continuous(limits = c(76.800, 76.200))+
+  # scale_y_continuous(limits)
+  coord_sf(xlim = c(-76.800, -76.500), ylim = c(39.150, 39.450))
+
+#this worked but dont want to have to put in limits each time
+# also the raster data is showing everywhere when it should be showing only in the polygons.need to mask, to use mask( ) both need to be spatwhatever
+
+ggplot()+
+  geom_spatraster(data = NDVIbaltimorePLOT)+
+  scale_fill_gradient(low = "white", high = "forestgreen", name = "NDVI")+
+  geom_sf(data = Baltimore, fill = NA, color = "black")+
+  # scale_x_continuous(limits = c(76.800, 76.200))+
+  # scale_y_continuous(limits)
+  coord_sf(xlim = c(-76.800, -76.500), ylim = c(39.150, 39.450))
+  
+
+#want to combine with 
+plot <- ggplot(data = Baltimore)+ 
+  geom_sf(aes(fill = grade))+
+  scale_fill_manual(values = unique(Baltimore$fill))
+
+#sooooo
+
+ggplot()+
+  #raster
+  geom_spatraster(data = NDVIbaltimorePLOT)+
+  scale_fill_gradient(low = "white", high = "forestgreen", name = "NDVI")+
+  
+  #polygons
+  geom_sf(data = Baltimore, aes(color = grade), fill = NA, linewidth  = 1)+
+  scale_color_manual(values = color_grade_table$fill)+
+
+  #zoom
+  coord_sf(xlim = c(-76.800, -76.500), ylim = c(39.150, 39.450))
+
+
+  #now to mask, needs 2 spats, convert baltimore to spat??
+Baltimore_vect <- as_spatvector(Baltimore)
+NDVI_inside <- mask(NDVIbaltimorePLOT,Baltimore_vect)
+NDVI_outside <- mask(NDVIbaltimorePLOT,Baltimore_vect, inverse=TRUE)
+
+#google says use ggnewscale to have multiple scales so i can have inside and inverse raster data
+install.packages("ggnewscale")
+library(ggnewscale)
+
+baltimore_plot <- ggplot()+
+  #BW raster
+  geom_spatraster(data = NDVI_outside)+
+  scale_fill_gradient(low="white", high = "grey", guide = "none")+
+
+  #geom_spatraster(data = NDVIbaltimorePLOT)+
+  #scale_fill_gradient(low= "white",high = "black")+
+  #raster
+  ggnewscale::new_scale_fill()+
+  geom_spatraster(data = NDVI_inside)+
+  scale_fill_gradient(low = "white", high = "forestgreen", na.value = NA, name = "NDVI")+
+  
+  #polygons
+  geom_sf(data = Baltimore, aes(color = grade), fill = NA, linewidth  = 1)+
+  scale_color_manual(values = color_grade_table$fill)+
+
+  #zoom
+  coord_sf(xlim = c(-76.770, -76.510), ylim = c(39.175, 39.410))+
+  #title and save
+  labs(title = "Map of Baltimore Redlining Grades Compared to \nSatellite NDVI Greenery Data")
+
+baltimore_plot
+
+ggsave(filename = "BaltimorePLOT.png", 
+       path = "PLOTS/", 
+       width = 6, 
+       height = 6, 
+       dpi = 600)
+
+  
+
+#color_grade_table<- as.data.frame(Baltimore)[c("grade", "fill")]
+#color_grade_table<-unique(color_grade_table)
+
+```
 ### Q6 (1 point)
 Repeat the above for all 5 cities and add the city name. Explore the `cowplot` or `patchwork` packages to create a multi-panel figure. 
 
