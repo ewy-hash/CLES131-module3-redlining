@@ -178,13 +178,17 @@ ggplot()+
 
 
   #now to mask, needs 2 spats, convert baltimore to spat??
-Baltimore_vect <- as_spatvector(Baltimore)
-NDVI_inside <- mask(NDVIbaltimorePLOT,Baltimore_vect)
-NDVI_outside <- mask(NDVIbaltimorePLOT,Baltimore_vect, inverse=TRUE)
-
 #google says use ggnewscale to have multiple scales so i can have inside and inverse raster data
 install.packages("ggnewscale")
 library(ggnewscale)
+
+
+
+asvect <- as_spatvector(Baltimore)
+NDVI_inside <- mask(NDVIbaltimorePLOT,asvect)
+NDVI_outside <- mask(NDVIbaltimorePLOT,asvect, inverse=TRUE)
+
+
 
 baltimore_plot <- ggplot()+
   #BW raster
@@ -222,8 +226,253 @@ ggsave(filename = "BaltimorePLOT.png",
 
 ```
 ### Q6 (1 point)
-Repeat the above for all 5 cities and add the city name. Explore the `cowplot` or `patchwork` packages to create a multi-panel figure. 
+Repeat the above for all 5 cities and add the city name. Explore the `cowplot` or `patchwork` packages to create a multi-panel figure.
+```{r}
+#reconfigured to work for each of the cities by just changing the file names and a few other things
 
+####Baltimore####
+RED <- rast(x = "Data/Baltimore/T18SUJ_20230525T154941_B04.jp2")
+NIR <- rast(x = "Data/Baltimore/T18SUJ_20230525T154941_B08.jp2")
+NDVI <- (NIR - RED) / (NIR + RED)
+
+
+NDVIplot<- terra::project(x = NDVI, "EPSG:4326")
+asvect <- as_spatvector(Baltimore)
+NDVI_inside <- mask(NDVIplot,asvect)
+NDVI_outside <- mask(NDVIplot,asvect, inverse=TRUE)
+
+
+
+baltimore_plot <- ggplot()+
+  #BW raster
+  geom_spatraster(data = NDVI_outside)+
+  scale_fill_gradient(low="white", high = "grey", guide = "none")+
+
+  #geom_spatraster(data = NDVIbaltimorePLOT)+
+  #scale_fill_gradient(low= "white",high = "black")+
+  #raster
+  ggnewscale::new_scale_fill()+
+  geom_spatraster(data = NDVI_inside)+
+  scale_fill_gradient(low = "white", high = "forestgreen", na.value = NA, name = "NDVI")+
+  
+  #polygons
+  geom_sf(data = Baltimore, aes(color = grade), fill = NA, linewidth  = 1)+
+  scale_color_manual(values = color_grade_table$fill)+
+
+  #zoom
+  coord_sf(xlim = c(-76.770, -76.510), ylim = c(39.175, 39.410))+
+  #title and save
+  labs(title = "Map of Baltimore Redlining Grades Compared to \nSatellite NDVI Greenery Data")
+
+baltimore_plot
+
+ggsave(filename = "BaltimorePLOT.png", 
+       path = "PLOTS/", 
+       width = 6, 
+       height = 6, 
+       dpi = 600)
+
+```
+```{r}
+####Minneapolis####
+RED <- rast(x = "Data/Minneapolis/T15TVK_20220603T170901_B04.jp2")
+NIR <- rast(x = "Data/Minneapolis/T15TVK_20220603T170901_B08.jp2")
+NDVI <- (NIR - RED) / (NIR + RED)
+
+#had to check a few things
+#ext(NDVIplot)
+#ext(asvect)
+
+
+NDVIplot<- terra::project(x = NDVI, "EPSG:4326")
+asvect <- as_spatvector(Minneapolis)
+NDVI_inside <- mask(NDVIplot,asvect)
+NDVI_outside <- mask(NDVIplot,asvect, inverse=TRUE)
+
+#ggplot()+
+#  geom_spatraster(data = NDVI_inside)
+
+
+minneapolis_plot <- ggplot()+
+  #BW raster
+  geom_spatraster(data = NDVI_outside)+
+  scale_fill_gradient(low="white", high = "grey", guide = "none")+
+
+  #geom_spatraster(data = NDVIbaltimorePLOT)+
+  #scale_fill_gradient(low= "white",high = "black")+
+  #raster
+  ggnewscale::new_scale_fill()+
+  geom_spatraster(data = NDVI_inside)+
+  scale_fill_gradient(low = "white", high = "forestgreen", na.value = NA, name = "NDVI")+
+  
+  #polygons
+  geom_sf(data = Minneapolis, aes(color = grade), fill = NA, linewidth  = 1)+
+  scale_color_manual(values = color_grade_table$fill)+
+
+  #zoom
+  coord_sf(xlim = c(-93.35, -93.19), ylim = c(44.89, 45.06))+
+  #title and save
+  labs(title = "Map of Minneapolis Redlining Grades Compared to \nSatellite NDVI Greenery Data")
+
+minneapolis_plot
+
+ggsave(filename = "MinneapolisPLOT.png", 
+       path = "PLOTS/", 
+       width = 6, 
+       height = 6, 
+       dpi = 600)
+```
+
+
+```{r}
+####Birmingham####
+RED <- rast(x = "Data/Birmingham/T16SEC_20220427T162829_B04.jp2")
+NIR <- rast(x = "Data/Birmingham/T16SEC_20220427T162829_B08.jp2")
+NDVI <- (NIR - RED) / (NIR + RED)
+
+#had to check a few things
+#ext(NDVIplot)
+#ext(asvect)
+
+
+NDVIplot<- terra::project(x = NDVI, "EPSG:4326")
+asvect <- as_spatvector(Birmingham)
+NDVI_inside <- mask(NDVIplot,asvect)
+NDVI_outside <- mask(NDVIplot,asvect, inverse=TRUE)
+
+#ggplot()+
+#  geom_spatraster(data = NDVI_inside)
+
+
+birmingham_plot <- ggplot()+
+  #BW raster
+  geom_spatraster(data = NDVI_outside)+
+  scale_fill_gradient(low="white", high = "grey", guide = "none")+
+
+  #geom_spatraster(data = NDVIbaltimorePLOT)+
+  #scale_fill_gradient(low= "white",high = "black")+
+  #raster
+  ggnewscale::new_scale_fill()+
+  geom_spatraster(data = NDVI_inside)+
+  scale_fill_gradient(low = "white", high = "forestgreen", na.value = NA, name = "NDVI")+
+  
+  #polygons
+  geom_sf(data = Birmingham, aes(color = grade), fill = NA, linewidth  = 1)+
+  scale_color_manual(values = color_grade_table$fill)+
+
+  #zoom
+  coord_sf(xlim = c(-86.95, -86.67), ylim = c(33.43, 33.64))+
+  #title and save
+  labs(title = "Map of Birmingham Redlining Grades Compared to \nSatellite NDVI Greenery Data")
+
+birmingham_plot
+
+ggsave(filename = "BirminghamPLOT.png", 
+       path = "PLOTS/", 
+       width = 6, 
+       height = 6, 
+       dpi = 600)
+```
+
+```{r}
+####Phoenix####
+RED <- rast(x = "Data/Phoenix/T12SUC_20211110T180601_B04.jp2")
+NIR <- rast(x = "Data/Phoenix/T12SUC_20211110T180601_B08.jp2")
+NDVI <- (NIR - RED) / (NIR + RED)
+
+#had to check a few things
+#ext(NDVIplot)
+#ext(asvect)
+
+
+NDVIplot<- terra::project(x = NDVI, "EPSG:4326")
+asvect <- as_spatvector(Phoenix)
+NDVI_inside <- mask(NDVIplot,asvect)
+NDVI_outside <- mask(NDVIplot,asvect, inverse=TRUE)
+
+#ggplot()+
+#  geom_spatraster(data = NDVI_inside)
+
+
+phoenix_plot <- ggplot()+
+  #BW raster
+  geom_spatraster(data = NDVI_outside)+
+  scale_fill_gradient(low="white", high = "grey", guide = "none")+
+
+  #geom_spatraster(data = NDVIbaltimorePLOT)+
+  #scale_fill_gradient(low= "white",high = "black")+
+  #raster
+  ggnewscale::new_scale_fill()+
+  geom_spatraster(data = NDVI_inside)+
+  scale_fill_gradient(low = "white", high = "forestgreen", na.value = NA, name = "NDVI")+
+  
+  #polygons
+  geom_sf(data = Phoenix, aes(color = grade), fill = NA, linewidth  = 1)+
+  scale_color_manual(values = color_grade_table$fill)+
+
+  #zoom
+  coord_sf(xlim = c(-112.13, -112.02), ylim = c(33.42, 33.51))+
+  #title and save
+  labs(title = "Map of Phoenix Redlining Grades Compared to \nSatellite NDVI Greenery Data")
+
+phoenix_plot
+
+ggsave(filename = "PhoenixPLOT.png", 
+       path = "PLOTS/", 
+       width = 6, 
+       height = 6, 
+       dpi = 600)
+```
+
+```{r}
+####Indianapolis####
+RED <- rast(x = "Data/Indianapolis/T16TEK_20210726T162901_B04.jp2")
+NIR <- rast(x = "Data/Indianapolis/T16TEK_20210726T162901_B08.jp2")
+NDVI <- (NIR - RED) / (NIR + RED)
+
+#had to check a few things
+#ext(NDVIplot)
+#ext(asvect)
+
+
+NDVIplot<- terra::project(x = NDVI, "EPSG:4326")
+asvect <- as_spatvector(Indianapolis)
+NDVI_inside <- mask(NDVIplot,asvect)
+NDVI_outside <- mask(NDVIplot,asvect, inverse=TRUE)
+
+#ggplot()+
+#  geom_spatraster(data = NDVI_inside)
+
+
+plot <- ggplot()+
+  #BW raster
+  geom_spatraster(data = NDVI_outside)+
+  scale_fill_gradient(low="white", high = "grey", guide = "none")+
+
+  #geom_spatraster(data = NDVIbaltimorePLOT)+
+  #scale_fill_gradient(low= "white",high = "black")+
+  #raster
+  ggnewscale::new_scale_fill()+
+  geom_spatraster(data = NDVI_inside)+
+  scale_fill_gradient(low = "white", high = "forestgreen", na.value = NA, name = "NDVI")+
+  
+  #polygons
+  geom_sf(data = Indianapolis, aes(color = grade), fill = NA, linewidth  = 1)+
+  scale_color_manual(values = color_grade_table$fill)+
+
+  #zoom
+  coord_sf(xlim = c(-86.3, -86), ylim = c(39.66, 39.93))+
+  #title and save
+  labs(title = "Map of Indianapolis Redlining Grades Compared to \nSatellite NDVI Greenery Data")
+
+plot
+
+ggsave(filename = "IndianapolisPLOT.png", 
+       path = "PLOTS/", 
+       width = 6, 
+       height = 6, 
+       dpi = 600)
+```
 ### Q7 (2 points)
 Now, let's examine the relationship between redlining and NDVI. Temporarily re-read in your redlining polygons using `terra:::vect()`. You can use `terra:extract()` on these temporary polygons within `mutate()` on your original polygons read in with `read_sf()`. Because the output of `terra::extract()` is a data.frame, `dplyr::pull()` can be helpful. 
 
