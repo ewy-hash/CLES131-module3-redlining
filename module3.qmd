@@ -108,12 +108,15 @@ Do the rasters and polygons share the same coordinate reference system? If not, 
 ```{r}
 # seems like they do share the coordiante system, as you can see from running the code below they both get placed onto the map using longitude and latitude coords
 
+crs(Baltimore)
+crs(NDVIbaltimore)
+#however according to this they are different EPSG
 
 test <- ggplot(data = Baltimore)+
   geom_sf()+
   geom_spatraster(data = NIRbaltimore, alpha = 0.5)
 test
-
+#so im confused about why this worked then
 ```
 ### Q5 (1 points)
 Overlay the projected vector file onto the projected NDVI for a single city using `tidyterra::geom_spatraster()` in addition to `geom_sf()`. Adjust the color scales and add a scale bar to approximate Fig. 2a of Schell et al. 2020. 
@@ -476,6 +479,9 @@ ggsave(filename = "IndianapolisPLOT.png",
 ### Q7 (2 points)
 Now, let's examine the relationship between redlining and NDVI. Temporarily re-read in your redlining polygons using `terra:::vect()`. You can use `terra:extract()` on these temporary polygons within `mutate()` on your original polygons read in with `read_sf()`. Because the output of `terra::extract()` is a data.frame, `dplyr::pull()` can be helpful. 
 
+```{r}
+terra::vect(Baltimore)
+```
 Extract the mean, median, and central 95% quantile of NDVI from each delineated neighborhood while retaining the identity of the city. Perform your choice of at least two exploratory data visualizations utilizing different variables to evaluate this relationship and examine whether it differs between cities. 
 
 ### Bonus 1 (1 point)
