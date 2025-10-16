@@ -484,24 +484,52 @@ terra::vect(Baltimore)
 ```
 Extract the mean, median, and central 95% quantile of NDVI from each delineated neighborhood while retaining the identity of the city. Perform your choice of at least two exploratory data visualizations utilizing different variables to evaluate this relationship and examine whether it differs between cities. 
 ```{r}
-vectorA <- vect(Baltimore)
+vectbaltimore <- terra::vect(Baltimore)
 #step 1 made polygons with just the grade data, then conv to vect
+temp <- Baltimore |> 
+  mutate(ndvi_mean = terra::extract(NDVIbaltimore, vectbaltimore,
+                                    fun = mean, na.rm = TRUE, ID = FALSE) |> 
+           pull(),
+         )
+
+
+#quantile()
+
+
 gradeA <- filter(Baltimore, grade == "A")
 gradeB <- filter(Baltimore, grade == "B")
 gradeC <- filter(Baltimore, grade == "C")
 gradeD <- filter(Baltimore, grade == "D")
 
+#vects
 gradeAvect <- vect(gradeA)
 gradeBvect <- vect(gradeB)
 gradeCvect <- vect(gradeC)
 gradeDvect <- vect(gradeD)
 
 
- 
-extracteda <- extract(x = NDVIbaltimore, y = CityAvect, method = "simple" )
-#need to mask?
-mean(extracteda$T18SUJ_20230525T154941_B08)
-median(extracteda$T18SUJ_20230525T154941_B08)
+#extracted
+extA <- extract(x = NDVIbaltimore, y = gradeAvect, method = "simple" )
+extB <- extract(x = NDVIbaltimore, y = gradeBvect, method = "simple" )
+extC <- extract(x = NDVIbaltimore, y = gradeCvect, method = "simple" )
+extD <- extract(x = NDVIbaltimore, y = gradeDvect, method = "simple" )
+
+
+mean(extA$T18SUJ_20230525T154941_B08)
+median(extA$T18SUJ_20230525T154941_B08)
+
+mean(extB$T18SUJ_20230525T154941_B08)
+median(extB$T18SUJ_20230525T154941_B08)
+
+mean(extC$T18SUJ_20230525T154941_B08)
+median(extC$T18SUJ_20230525T154941_B08)
+
+mean(extD$T18SUJ_20230525T154941_B08)
+median(extD$T18SUJ_20230525T154941_B08)
+
+lm(formula = data = extA$T18SUJ_20230525T154941_B08)
+
+
 
 
 ```
