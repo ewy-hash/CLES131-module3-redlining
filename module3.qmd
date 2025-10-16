@@ -110,7 +110,7 @@ Do the rasters and polygons share the same coordinate reference system? If not, 
 
 crs(Baltimore)
 crs(NDVIbaltimore)
-#however according to this they are different EPSG
+#however according to this they are different EPSG (i found this command a lot later and came back retroactively)
 
 test <- ggplot(data = Baltimore)+
   geom_sf()+
@@ -483,7 +483,16 @@ Now, let's examine the relationship between redlining and NDVI. Temporarily re-r
 terra::vect(Baltimore)
 ```
 Extract the mean, median, and central 95% quantile of NDVI from each delineated neighborhood while retaining the identity of the city. Perform your choice of at least two exploratory data visualizations utilizing different variables to evaluate this relationship and examine whether it differs between cities. 
+```{r}
+vector <- vect(Baltimore)
+ 
+extracted <- extract(x = NDVIbaltimore, y = vector, method = "simple" )
+#need to mask?
+mean(extracted$T18SUJ_20230525T154941_B08)
+median(extracted$T18SUJ_20230525T154941_B08)
 
+
+```
 ### Bonus 1 (1 point)
 Perform a statistical test to support your visual analysis above. 
 
