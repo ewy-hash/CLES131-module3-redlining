@@ -12,6 +12,8 @@ library(sf) # simple features for R
 library(terra) # spatial data analysis
 library(tidyterra) #tidyverse methods for terra objects
 library(ggplot2)
+install.packages("ggnewscale")
+library(ggnewscale)
 ```
 
 ### Use of GitHub
@@ -134,7 +136,7 @@ crs(NDVIbaltimore)
 ext(NDVIbaltimore)
 ext(Baltimore)
 
-st_transform(x = NDVIbaltimore, crs = "EPSG:4326")
+#st_transform(x = NDVIbaltimore, crs = "EPSG:4326")
 #need to change NDVIbaltimore to spsg 4326 which is what Baltimore has
 #project from terra
 #:: means it uses the function from that package
@@ -182,7 +184,7 @@ ggplot()+
 
   #now to mask, needs 2 spats, convert baltimore to spat??
 #google says use ggnewscale to have multiple scales so i can have inside and inverse raster data
-install.packages("ggnewscale")
+#install.packages("ggnewscale")
 library(ggnewscale)
 
 
@@ -382,14 +384,14 @@ ggsave(filename = "BirminghamPLOT.png",
 ####Phoenix####
 RED <- rast(x = "Data/Phoenix/T12SUC_20211110T180601_B04.jp2")
 NIR <- rast(x = "Data/Phoenix/T12SUC_20211110T180601_B08.jp2")
-NDVI <- (NIR - RED) / (NIR + RED)
+NDVIphoenix <- (NIR - RED) / (NIR + RED)
 
 #had to check a few things
 #ext(NDVIplot)
 #ext(asvect)
 
 
-NDVIplot<- terra::project(x = NDVI, "EPSG:4326")
+NDVIplot<- terra::project(x = NDVIphoenix, "EPSG:4326")
 asvect <- as_spatvector(Phoenix)
 NDVI_inside <- mask(NDVIplot,asvect)
 NDVI_outside <- mask(NDVIplot,asvect, inverse=TRUE)
@@ -487,55 +489,175 @@ Extract the mean, median, and central 95% quantile of NDVI from each delineated 
 ```{r}
 vectbaltimore <- terra::vect(Baltimore)
 #step 1 made polygons with just the grade data, then conv to vect
-temp <- Baltimore |> 
-  mutate(ndvi_mean = terra::extract(NDVIbaltimore, vectbaltimore,
-                                    fun = mean, na.rm = TRUE, ID = FALSE) |> 
-           pull(),
-         )
+#this was from office hours but it isn't working and I don't understand why
 
-quantile(x = temp$T18SUJ_20230525T154941_B08, probs= .95)
+# temp <- Baltimore |> 
+#   mutate(ndvi_mean = terra::extract(NDVIbaltimore, vectbaltimore,
+#                                     fun = mean, na.rm = TRUE, ID = FALSE) |> 
+#            pull()
+#          )
 
-
-#quantile()
-
-
-gradeA <- filter(Baltimore, grade == "A")
-gradeB <- filter(Baltimore, grade == "B")
-gradeC <- filter(Baltimore, grade == "C")
-gradeD <- filter(Baltimore, grade == "D")
-
-#vects
-gradeAvect <- vect(gradeA)
-gradeBvect <- vect(gradeB)
-gradeCvect <- vect(gradeC)
-gradeDvect <- vect(gradeD)
+#quantile(x = temp$T18SUJ_20230525T154941_B08, probs= .95)
 
 
-#extracted
-extA <- extract(x = NDVIbaltimore, y = gradeAvect, method = "simple" )
-extB <- extract(x = NDVIbaltimore, y = gradeBvect, method = "simple" )
-extC <- extract(x = NDVIbaltimore, y = gradeCvect, method = "simple" )
-extD <- extract(x = NDVIbaltimore, y = gradeDvect, method = "simple" )
+class(vectbaltimore)
+
+RED <- rast(x = "Data/Baltimore/T18SUJ_20230525T154941_B04.jp2")
+NIR <- rast(x = "Data/Baltimore/T18SUJ_20230525T154941_B08.jp2")
+NDVI <- (NIR - RED) / (NIR + RED)
 
 
-mean(extA$T18SUJ_20230525T154941_B08)
-median(extA$T18SUJ_20230525T154941_B08)
-quantile(x = extA$T18SUJ_20230525T154941_B08, probs = 0.95)
+NDVIplot<- terra::project(x = NDVI, "EPSG:4326")
 
-mean(extB$T18SUJ_20230525T154941_B08)
-median(extB$T18SUJ_20230525T154941_B08)
-quantile(extB$T18SUJ_20230525T154941_B08, probs = .95)
+ndvi_values <- terra::extract(NDVIplot, vect(Baltimore),
+                                    fun = mean, na.rm = TRUE, ID = FALSE)
 
-mean(extC$T18SUJ_20230525T154941_B08)
-median(extC$T18SUJ_20230525T154941_B08)
-quantile(extC$T18SUJ_20230525T154941_B08, probs = .95)
+Baltimore$NDVI_mean <- ndvi_values
 
 
-mean(extD$T18SUJ_20230525T154941_B08)
-median(extD$T18SUJ_20230525T154941_B08)
-quantile(extD$T18SUJ_20230525T154941_B08, probs = .95)
+#phoenix 
+RED <- rast(x = "Data/Phoenix/T12SUC_20211110T180601_B04.jp2")
+NIR <- rast(x = "Data/Phoenix/T12SUC_20211110T180601_B08.jp2")
+NDVIphoenix <- (NIR - RED) / (NIR + RED)
 
-lm(formula = data = extA$T18SUJ_20230525T154941_B08)
+NDVIplot<- terra::project(x = NDVIphoenix, "EPSG:4326")
+ndvi_values <- terra::extract(NDVIplot, vect(Phoenix),
+                                    fun = mean, na.rm = TRUE, ID = FALSE)
+
+Phoenix$NDVI_mean <- ndvi_values
+
+
+#minneapolis
+RED <- rast(x = "Data/Minneapolis/T15TVK_20220603T170901_B04.jp2")
+NIR <- rast(x = "Data/Minneapolis/T15TVK_20220603T170901_B08.jp2")
+NDVI <- (NIR - RED) / (NIR + RED)
+
+NDVIplot<- terra::project(x = NDVI, "EPSG:4326")
+ndvi_values <- terra::extract(NDVIplot, vect(Minneapolis),
+                                    fun = mean, na.rm = TRUE, ID = FALSE)
+
+Minneapolis$NDVI_mean <- ndvi_values
+
+#birmingham
+RED <- rast(x = "Data/Birmingham/T16SEC_20220427T162829_B04.jp2")
+NIR <- rast(x = "Data/Birmingham/T16SEC_20220427T162829_B08.jp2")
+NDVI <- (NIR - RED) / (NIR + RED)
+
+NDVIplot<- terra::project(x = NDVI, "EPSG:4326")
+
+ndvi_values <- terra::extract(NDVIplot, vect(Birmingham),
+                                    fun = mean, na.rm = TRUE, ID = FALSE)
+
+Birmingham$NDVI_mean <- ndvi_values
+
+#indianapolis
+RED <- rast(x = "Data/Indianapolis/T16TEK_20210726T162901_B04.jp2")
+NIR <- rast(x = "Data/Indianapolis/T16TEK_20210726T162901_B08.jp2")
+NDVI <- (NIR - RED) / (NIR + RED)
+
+NDVIplot<- terra::project(x = NDVI, "EPSG:4326")
+ndvi_values <- terra::extract(NDVIplot, vect(Indianapolis),
+                                    fun = mean, na.rm = TRUE, ID = FALSE)
+
+Indianapolis$NDVI_mean <- ndvi_values
+
+#quantile and calculations in a df
+mean = c(mean(Indianapolis$NDVI_mean$T16TEK_20210726T162901_B08, na.rm = TRUE),
+          mean(Birmingham$NDVI_mean$T16SEC_20220427T162829_B08, na.rm = TRUE),
+          mean(Phoenix$NDVI_mean$T12SUC_20211110T180601_B08, na.rm = TRUE),
+          mean(Baltimore$NDVI_mean$T18SUJ_20230525T154941_B08, na.rm = TRUE),
+          mean(Minneapolis$NDVI_mean$T15TVK_20220603T170901_B08))
+
+median = c(median(Indianapolis$NDVI_mean$T16TEK_20210726T162901_B08, na.rm = TRUE),
+           median(Birmingham$NDVI_mean$T16SEC_20220427T162829_B08, na.rm = TRUE),
+           median(Phoenix$NDVI_mean$T12SUC_20211110T180601_B08, na.rm = TRUE),
+           median(Baltimore$NDVI_mean$T18SUJ_20230525T154941_B08, na.rm = TRUE),
+           median(Minneapolis$NDVI_mean$T15TVK_20220603T170901_B08))
+
+mean(Indianapolis$NDVI_mean$T16TEK_20210726T162901_B08, na.rm = TRUE)
+median(Indianapolis$NDVI_mean$T16TEK_20210726T162901_B08, na.rm = TRUE)
+quantile(Indianapolis$NDVI_mean$T16TEK_20210726T162901_B08, probs = c(.025, .975))
+
+mean(Birmingham$NDVI_mean$T16SEC_20220427T162829_B08, na.rm = TRUE)
+median(Birmingham$NDVI_mean$T16SEC_20220427T162829_B08, na.rm = TRUE)
+quantile(Birmingham$NDVI_mean$T16SEC_20220427T162829_B08, probs = c(.025, .975))
+
+mean(Phoenix$NDVI_mean$T12SUC_20211110T180601_B08, na.rm = TRUE)
+median(Phoenix$NDVI_mean$T12SUC_20211110T180601_B08, na.rm = TRUE)
+quantile(Phoenix$NDVI_mean$T12SUC_20211110T180601_B08, probs = c(.025, .975))
+
+mean(Baltimore$NDVI_mean$T18SUJ_20230525T154941_B08, na.rm = TRUE)
+median(Baltimore$NDVI_mean$T18SUJ_20230525T154941_B08, na.rm = TRUE)
+quantile(Baltimore$NDVI_mean$T18SUJ_20230525T154941_B08, probs = c(.025, .975))
+
+#Minneapolis$NDVI_mean$T15TVK_20220603T170901_B08 |> 
+  mean(Minneapolis$NDVI_mean$T15TVK_20220603T170901_B08)
+median(Minneapolis$NDVI_mean$T15TVK_20220603T170901_B08)
+quantile(Minneapolis$NDVI_mean$T15TVK_20220603T170901_B08, probs = c(.025, .975))
+
+
+summary <- data.frame(cities = c("Indianapolis", "Birmingham", "Phoenix", "Baltimore", "Minneapolis"), 
+                      mean = c(mean(Indianapolis$NDVI_mean$T16TEK_20210726T162901_B08, na.rm = TRUE),
+                               mean(Birmingham$NDVI_mean$T16SEC_20220427T162829_B08, na.rm = TRUE),
+                               mean(Phoenix$NDVI_mean$T12SUC_20211110T180601_B08, na.rm = TRUE),
+                               mean(Baltimore$NDVI_mean$T18SUJ_20230525T154941_B08, na.rm = TRUE),
+                               mean(Minneapolis$NDVI_mean$T15TVK_20220603T170901_B08)),
+                      median = c(median(Indianapolis$NDVI_mean$T16TEK_20210726T162901_B08, na.rm = TRUE),
+                                 median(Birmingham$NDVI_mean$T16SEC_20220427T162829_B08, na.rm = TRUE),
+                                 median(Phoenix$NDVI_mean$T12SUC_20211110T180601_B08, na.rm = TRUE),
+                                 median(Baltimore$NDVI_mean$T18SUJ_20230525T154941_B08, na.rm = TRUE),
+                                 median(Minneapolis$NDVI_mean$T15TVK_20220603T170901_B08)),
+                      confidenceMin = c(quantile(Indianapolis$NDVI_mean$T16TEK_20210726T162901_B08, probs = .025),
+                               quantile(Birmingham$NDVI_mean$T16SEC_20220427T162829_B08, probs = .025),
+                               quantile(Phoenix$NDVI_mean$T12SUC_20211110T180601_B08, probs = .025),
+                               quantile(Baltimore$NDVI_mean$T18SUJ_20230525T154941_B08, probs = .025),
+                               quantile(Minneapolis$NDVI_mean$T15TVK_20220603T170901_B08, probs = .025)),
+                      confidenceMax = c(quantile(Indianapolis$NDVI_mean$T16TEK_20210726T162901_B08, probs = .975),
+                               quantile(Birmingham$NDVI_mean$T16SEC_20220427T162829_B08, probs = .975),
+                               quantile(Phoenix$NDVI_mean$T12SUC_20211110T180601_B08, probs = .975),
+                               quantile(Baltimore$NDVI_mean$T18SUJ_20230525T154941_B08, probs = .975),
+                               quantile(Minneapolis$NDVI_mean$T15TVK_20220603T170901_B08, probs = .975)))
+                               
+
+
+#code not being used but i didn't want to delete
+# gradeA <- filter(Baltimore, grade == "A")
+# gradeB <- filter(Baltimore, grade == "B")
+# gradeC <- filter(Baltimore, grade == "C")
+# gradeD <- filter(Baltimore, grade == "D")
+# 
+# #vects
+# gradeAvect <- vect(gradeA)
+# gradeBvect <- vect(gradeB)
+# gradeCvect <- vect(gradeC)
+# gradeDvect <- vect(gradeD)
+# 
+# 
+# #extracted
+# extA <- extract(x = NDVIbaltimore, y = gradeAvect, method = "simple" )
+# extB <- extract(x = NDVIbaltimore, y = gradeBvect, method = "simple" )
+# extC <- extract(x = NDVIbaltimore, y = gradeCvect, method = "simple" )
+# extD <- extract(x = NDVIbaltimore, y = gradeDvect, method = "simple" )
+# 
+# 
+# mean(extA$T18SUJ_20230525T154941_B08)
+# median(extA$T18SUJ_20230525T154941_B08)
+# quantile(x = extA$T18SUJ_20230525T154941_B08, probs = c(.025, 0.975))
+# 
+# mean(extB$T18SUJ_20230525T154941_B08)
+# median(extB$T18SUJ_20230525T154941_B08)
+# quantile(extB$T18SUJ_20230525T154941_B08, probs = c(.025, 0.975))
+# 
+# mean(extC$T18SUJ_20230525T154941_B08)
+# median(extC$T18SUJ_20230525T154941_B08)
+# quantile(extC$T18SUJ_20230525T154941_B08, probs = c(.025, 0.975))
+# 
+# 
+# mean(extD$T18SUJ_20230525T154941_B08)
+# median(extD$T18SUJ_20230525T154941_B08)
+# quantile(extD$T18SUJ_20230525T154941_B08, probs = c(.025, 0.975))
+# 
+# lm(formula = data = extA$T18SUJ_20230525T154941_B08)
 
 
 
