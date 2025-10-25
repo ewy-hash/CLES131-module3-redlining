@@ -276,6 +276,7 @@ ggsave(filename = "BaltimorePLOT.png",
        dpi = 600)
 
 ```
+
 ```{r}
 ####Minneapolis####
 RED <- rast(x = "Data/Minneapolis/T15TVK_20220603T170901_B04.jp2")
@@ -492,6 +493,8 @@ temp <- Baltimore |>
            pull(),
          )
 
+quantile(x = temp$T18SUJ_20230525T154941_B08, probs= .95)
+
 
 #quantile()
 
@@ -517,15 +520,20 @@ extD <- extract(x = NDVIbaltimore, y = gradeDvect, method = "simple" )
 
 mean(extA$T18SUJ_20230525T154941_B08)
 median(extA$T18SUJ_20230525T154941_B08)
+quantile(x = extA$T18SUJ_20230525T154941_B08, probs = 0.95)
 
 mean(extB$T18SUJ_20230525T154941_B08)
 median(extB$T18SUJ_20230525T154941_B08)
+quantile(extB$T18SUJ_20230525T154941_B08, probs = .95)
 
 mean(extC$T18SUJ_20230525T154941_B08)
 median(extC$T18SUJ_20230525T154941_B08)
+quantile(extC$T18SUJ_20230525T154941_B08, probs = .95)
+
 
 mean(extD$T18SUJ_20230525T154941_B08)
 median(extD$T18SUJ_20230525T154941_B08)
+quantile(extD$T18SUJ_20230525T154941_B08, probs = .95)
 
 lm(formula = data = extA$T18SUJ_20230525T154941_B08)
 
