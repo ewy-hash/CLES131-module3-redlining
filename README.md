@@ -3,6 +3,8 @@
 ## Team members and contributions
 Evan Wyers
 
+
+Note: pdf didn't render all plots at a good size, so I added them to the plots folder and you should be able to download them and view them from there if you want to take a closer look
 ## Learning objectives
 
  - Practice reproducible and version-controlled coding
