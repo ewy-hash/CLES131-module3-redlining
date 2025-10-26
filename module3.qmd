@@ -659,16 +659,39 @@ summary <- data.frame(cities = c("Indianapolis", "Birmingham", "Phoenix", "Balti
 # 
 # lm(formula = data = extA$T18SUJ_20230525T154941_B08)
 
+ggplot(summary, mapping = aes(x = cities, y = mean))+
+  geom_point()+
+  geom_errorbar(aes(ymin = confidenceMin, ymax = confidenceMax))
+#for this, the error bars represent the 95% quantile, not error calculations
+#why do i need the other thing after ndvi_mean
+ggplot(data = Birmingham, mapping = aes(x = grade, y = NDVI_mean$T16SEC_20220427T162829_B08))+
+  geom_bar(stat = "summary", fun = "mean")
+
+combined <- rbind(Phoenix, Baltimore, Birmingham, Minneapolis, Indianapolis)
 
 
+ggplot(data = combined, mapping = aes(x = grade, y = NDVI_mean$T12SUC_20211110T180601_B08))+
+  geom_bar(stat = "summary", fun = "mean")
 
+#mean(combined$NDVI_mean$T12SUC_20211110T180601_B08[combined$grade == "A"])
 ```
 ### Bonus 1 (1 point)
 Perform a statistical test to support your visual analysis above. 
+```{r}
+linear_model <- lm(combined$NDVI_mean$T12SUC_20211110T180601_B08 ~ combined$grade, data = combined)
+summary(linear_model)
+
+#low r ^2 but low p value indicates the model it came up with isnt good, but there is a strong correlation between the variables. can maybe be interpreted as grade is 9% of the cause of change in ndvi.
+summary(anova(linear_model))
+```
 
 ### Q8 (2 points)
 Create a final plot and describe whether NDVI is associated with historical redlining. Does this pattern differ between the five cities examined here? If so, how? 
-
+```{r}
+ggplot(data = combined, mapping = aes(x = grade, y = NDVI_mean$T12SUC_20211110T180601_B08))+
+  geom_line()+
+  geom_smooth()
+```
 ### Bonus 2 (1 point)
 Include the results of your statistical test in the final plot and use prose to incorporate statistical output in the context of the question above. 
 
