@@ -688,9 +688,47 @@ summary(anova(linear_model))
 ### Q8 (2 points)
 Create a final plot and describe whether NDVI is associated with historical redlining. Does this pattern differ between the five cities examined here? If so, how? 
 ```{r}
-ggplot(data = combined, mapping = aes(x = grade, y = NDVI_mean$T12SUC_20211110T180601_B08))+
-  geom_line()+
-  geom_smooth()
+#idk why group works but it does: answer : group 1 means it treats all data as one group
+combined <- ggplot(data = combined, mapping = aes(x = grade, y = NDVI_mean$T12SUC_20211110T180601_B08))+
+  geom_smooth(aes(group = 1))+
+  scale_y_continuous(name = "NDVI")+
+  labs(title = "NDVI compared to grade of US Cities")
+combined
+
+#it does seem like NDVI is associated with historical redlining. lets check to see if it differs by city
+
+#birmingham
+1<- ggplot(data = Birmingham, mapping = aes(x = grade, y = Birmingham$NDVI_mean$T16SEC_20220427T162829_B08))+
+  geom_smooth(aes(group = 1))+
+  scale_y_continuous(name = "NDVI")+
+  labs(title = "NDVI compared to grade in Birmingham")
+
+#phoenix
+2<-ggplot(data = Phoenix, mapping = aes(x = grade, y = Phoenix$NDVI_mean$T12SUC_20211110T180601_B08))+
+  geom_smooth(aes(group = 1))+
+  scale_y_continuous(name = "NDVI")+
+  labs(title = "NDVI compared to grade in Phoenix")
+
+#indianapolis
+3<-ggplot(data = Indianapolis, mapping = aes(x = grade, y = Indianapolis$NDVI_mean$T16TEK_20210726T162901_B08))+
+  geom_smooth(aes(group = 1))+
+  scale_y_continuous(name = "NDVI")+
+  labs(title = "NDVI compared to grade in Indianapolis")
+
+#minneapolis
+4<-ggplot(data = Minneapolis, mapping = aes(x = grade, y = Minneapolis$NDVI_mean$T15TVK_20220603T170901_B08))+
+  geom_smooth(aes(group = 1))+
+  scale_y_continuous(name = "NDVI")+
+  labs(title = "NDVI compared to grade in Minneapolis")
+
+#baltimore
+5<-ggplot(data = Baltimore, mapping = aes(x = grade, y = Baltimore$NDVI_mean$T18SUJ_20230525T154941_B08))+
+  geom_smooth(aes(group = 1))+
+  scale_y_continuous(name = "NDVI")+
+  labs(title = "NDVI compared to grade in Baltimore")
+
+facet_wrap(facets = combined,1,2,3,4,5)
+
 ```
 ### Bonus 2 (1 point)
 Include the results of your statistical test in the final plot and use prose to incorporate statistical output in the context of the question above. 
